@@ -110,33 +110,32 @@ class CSGSIServer(SimpleHTTPRequestHandler):
             if 'previously' in cs:
                 prev = cs['previously']
 
-            if 'player' in cs and cs['provider']['steamid'] == cs['player']['steamid']:
-                if 'map' in cs:
-                    if cs['map']['phase'] == 'live' and cs['round']['phase'] in ['live', 'over']:
-                        last_kills = kills = cs['player']['state']['round_kills']
-                        last_killhs = killhs = cs['player']['state']['round_killhs']
+            if 'player' in cs and 'map' in cs:
+                if cs['provider']['steamid'] == cs['player']['steamid'] and cs['map']['phase'] == 'live' and cs['round']['phase'] in ['live', 'over']:
+                    last_kills = kills = cs['player']['state']['round_kills']
+                    last_killhs = killhs = cs['player']['state']['round_killhs']
 
-                        if 'player' in prev and type(prev['player']) is dict and 'state' in prev['player']:
-                            last_kills = prev['player']['state']['round_kills'] if 'round_kills' in prev['player']['state'] else kills
-                            last_killhs = prev['player']['state']['round_killhs'] if 'round_killhs' in prev['player']['state'] else killhs
+                    if 'player' in prev and type(prev['player']) is dict and 'state' in prev['player']:
+                        last_kills = prev['player']['state']['round_kills'] if 'round_kills' in prev['player']['state'] else kills
+                        last_killhs = prev['player']['state']['round_killhs'] if 'round_killhs' in prev['player']['state'] else killhs
 
-                        if killhs > last_killhs:
-                            kill_type.append(True)
-                            event_stack.append((time.time() + 1, save_playback))
-                        elif kills > last_kills:
-                            kill_type.append(False)
-                            event_stack.append((time.time() + 1, save_playback))
+                    if killhs > last_killhs:
+                        kill_type.append(True)
+                        event_stack.append((time.time() + 1, save_playback))
+                    elif kills > last_kills:
+                        kill_type.append(False)
+                        event_stack.append((time.time() + 1, save_playback))
 
-                    if 'round' in prev and type(prev['round']) is dict and 'phase' in prev['round']:
-                        if prev['round']['phase'] == 'freezetime' and cs['round']['phase'] == 'live':
-                            kill_type.clear()
-                            event_stack.append((time.time(), update_last_round))
-                            obs.script_log(obs.LOG_INFO, 'Clear old playback.')
-                        elif prev['round']['phase'] == 'live':
-                            if cs['map']['phase'] == 'gameover':
-                                event_stack.append((time.time() + 10, start_playback))
-                            elif cs['round']['phase'] == 'over':
-                                event_stack.append((time.time() + 2.5, start_playback))
+                if 'round' in prev and type(prev['round']) is dict and 'phase' in prev['round']:
+                    if prev['round']['phase'] == 'freezetime' and cs['round']['phase'] == 'live':
+                        kill_type.clear()
+                        event_stack.append((time.time(), update_last_round))
+                        obs.script_log(obs.LOG_INFO, 'Clear old playback.')
+                    elif prev['round']['phase'] == 'live':
+                        if cs['map']['phase'] == 'gameover':
+                            event_stack.append((time.time() + 9.75, start_playback))
+                        elif cs['round']['phase'] == 'over':
+                            event_stack.append((time.time() + 2.25, start_playback))
 
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", 'application/text')
