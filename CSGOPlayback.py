@@ -55,7 +55,6 @@ def start_playback():
         playback_list.clear()
 
         scene = obs.obs_get_scene_by_name(scene_name)
-        obs.obs_scene_get_source
         source = obs.obs_get_source_by_name(source_name)
 
         if scene and source:
@@ -210,6 +209,7 @@ def script_tick(seconds):
             event_stack.append((time.time() + (obs.obs_source_media_get_duration(source) - ts - 333) / 330.0, stop_playback))
             obs.obs_source_media_set_time(source, ts + 100)
             update_time = False
+        if source:
             obs.obs_source_release(source)
 
 def script_load(settings):
